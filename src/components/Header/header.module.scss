@@ -1,1 +1,24 @@
-// TODO
+.headerContainer {
+  height: 6.5rem;
+  width: 100%;
+  padding: 0rem 10rem;
+  background: var(--background);
+
+  .headerContent {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding: 0rem 12rem;
+
+    p {
+      padding-left: 1rem;
+      color: var(--white);
+      font-weight: 900;
+      font-size: 2rem;
+
+      span {
+        color: var(--pink);
+      }
+    }
+  }
+}
