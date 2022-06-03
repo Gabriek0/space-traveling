@@ -1,6 +1,9 @@
 import { GetStaticProps } from 'next';
 import { getPrismicClient } from '../services/prismic';
 
+import Prismic from '@prismicio/client';
+import { PrismicDocument } from '@prismicio/types';
+
 import commonStyles from '../styles/common.module.scss';
 
 import styles from "./home.module.scss";
@@ -27,16 +30,22 @@ interface HomeProps {
 function Home() {
   return (
     <>
-      <div>Oi</div>
+
     </>
   )
 }
 
 export default Home;
 
-// export const getStaticProps = async () => {
-//   // const prismic = getPrismicClient({});
-//   // const postsResponse = await prismic.getByType(TODO);
+export const getStaticProps: GetStaticProps = async () => {
+  const prismic = getPrismicClient();
 
-//   // TODO
-// };
+  const pages = await prismic.getByType<PrismicDocument>("posts");
+
+  console.log(pages);
+  return {
+    props: {
+
+    }
+  }
+};
