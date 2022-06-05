@@ -1,0 +1,60 @@
+.container {
+  width: 100%;
+
+  padding: 1rem 5rem;
+
+  .posts {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+
+    a {
+      text-decoration: none;
+      padding: 1rem;
+      width: 50%;
+      transition: filter 0.3s ease;
+
+      p, time, span {
+        font-weight: 400;
+      };
+
+      h1 {
+        color: var(--white);
+        font-weight: 700;
+        font-size: 2rem;
+        margin-bottom: 0.6rem;
+      };
+
+      p {
+        color: var(--gray);
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      time {
+        margin-right: 1rem;
+      };
+
+      time, span {
+        display: inline-flex;
+        align-items: center;
+
+        font-size: 0.9rem;
+        color: var(--gray-info);
+
+        svg {
+          margin-right: .3rem;
+        };
+
+      };
+
+    };
+
+    &:hover {
+      filter: brightness(0.8);
+    };
+
+  };
+
+
+};
