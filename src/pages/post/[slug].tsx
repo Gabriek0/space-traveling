@@ -6,6 +6,16 @@ import { GetStaticPaths, GetStaticProps } from 'next';
 // Prismic
 import { getPrismicClient } from '../../services/prismic';
 
+
+// React Icons
+import { FiUser } from "react-icons/fi";
+import { AiOutlineCalendar } from "react-icons/ai";
+import { AiOutlineClockCircle } from "react-icons/ai";
+
+// Date-fns
+import { format } from "date-fns";
+import ptBR from 'date-fns/locale/pt-BR';
+
 //Styles
 import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
@@ -32,24 +42,50 @@ interface PostProps {
   post: Post;
 }
 
-export default function Post() {
+export default function Post({ post }: PostProps) {
+
   return (
     <>
       <Head>
-        <title>teste</title>
+        <title>Spacetreveling | {post.data.title}</title>
       </Head>
 
+      <img src={post.data.banner.url} className={styles.banner} />
       <main className={styles.container}>
-        <article className={styles.post}>
-          <h1>Lorem ipsum dolor sit amet, consectetur adipiscing elit</h1>
-          <div className={styles.informations}>
-            <time>12 Mar 2021</time>
-            <p>Gabriel Henrique</p>
-            <time>4 min</time>
+        <div className={styles.post}>
+          <div className={styles.postHeader}>
+            <h1>{post.data.title}</h1>
+
+            <ul>
+              <li>
+                <AiOutlineCalendar size={20} />
+                {format(new Date(post.first_publication_date), "dd/MM/yyyy", { locale: ptBR })}
+              </li>
+              <li>
+                <FiUser size={20} />
+                {post.data.author}
+              </li>
+              <li>
+                <AiOutlineClockCircle size={20} />
+                5 min
+              </li>
+            </ul>
+
           </div>
-          <div className={styles.postContent}>
-          </div>
-        </article>
+
+          {post.data.content.map(content => (
+            <article key={content.heading}>
+              <h2>{content.heading}</h2>
+              <div
+                className={styles.postContent}
+                dangerouslySetInnerHTML={{ __html: RichText.asHtml(content.body) }}
+              // Porque utilizar o dangerous?
+              // Porque utilizar o RichText
+              />
+            </article>
+          ))
+          }
+        </div>
       </main>
     </>
   )
@@ -82,7 +118,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
   const slug = params?.slug;
 
-  const response = await prismic.getByUID("posts", String(slug));
+  const response = await prismic.getByUID("posts", String(slug), {});
 
   const post = {
     first_publication_date: response.first_publication_date,
@@ -101,11 +137,9 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     }
   }
 
-  console.log(post.data.content.body.text);
-
   return {
     props: {
-
+      post
     }
   };
 
