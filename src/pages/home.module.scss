@@ -5,14 +5,17 @@
 
   .posts {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     width: 100%;
+
 
     a {
       text-decoration: none;
       padding: 1rem;
       width: 50%;
       transition: filter 0.3s ease;
+      position: relative;
 
       p, time, span {
         font-weight: 400;
@@ -50,11 +53,31 @@
 
     };
 
-    &:hover {
-      filter: brightness(0.8);
-    };
+    .buttonContainer {
+      width: 50%;
+      padding: 1rem;
+
+      button {
+        height: fit-content;
+        width: fit-content;
+        border: none;
+        background: none;
+        color: var(--pink);
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-top: 4rem;
+
+        cursor: pointer;
+
+        &:hover {
+          filter: brightness(0.9);
+        }
+
+      }
+    }
 
   };
+
 
 
 };

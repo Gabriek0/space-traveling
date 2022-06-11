@@ -19,6 +19,7 @@ import styles from "./home.module.scss";
 // Date-fns
 import { format } from "date-fns";
 import ptBR from 'date-fns/locale/pt-BR';
+import { useEffect, useState } from 'react';
 
 interface Post {
   uid?: string;
@@ -40,6 +41,51 @@ interface HomeProps {
 }
 
 function Home({ postsPagination }: HomeProps) {
+
+  const formattedPost = postsPagination.results.map(post => {
+    return {
+      uid: post.uid,
+      first_publication_date: format(new Date(post.first_publication_date), "dd/MM/yyyy", { locale: ptBR }),
+      data: {
+        title: post.data.title,
+        subtitle: post.data.subtitle,
+        author: post.data.author,
+      },
+    }
+  });
+
+  const [posts, setPost] = useState<Post[]>(formattedPost)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [nextPage, setNextPage] = useState(postsPagination.next_page);
+
+  async function handleNextPage(): Promise<void> {
+    if (currentPage !== 1 && nextPage === null) {
+      return;
+    };
+
+    const postsResults = await fetch(`${nextPage}`)
+      .then(response => response.json())
+
+    setNextPage(postsResults.next_page);
+    setCurrentPage(postsResults.page);
+
+    //setNextPage(postsResults.nextPage);
+
+    const newPosts = postsResults.results.map(post => {
+      return {
+        uid: post.uid,
+        first_publication_date: format(new Date(post.first_publication_date), "dd/MM/yyyy", { locale: ptBR }),
+        data: {
+          title: post.data.title,
+          subtitle: post.data.subtitle,
+          author: post.data.author,
+        }
+      }
+    })
+
+    setPost([...posts, ...newPosts])
+  };
+
   return (
     <>
       <Head>
@@ -48,14 +94,14 @@ function Home({ postsPagination }: HomeProps) {
 
       <main className={styles.container}>
         <div className={styles.posts}>
-          {postsPagination?.results?.map(post => (
+          {posts.map(post => (
             <Link key={post.uid} href={`/post/${post.uid}`}>
               <a id={post.uid} href="">
                 <h1>{post.data.title}</h1>
                 <p>{post.data.subtitle}</p>
                 <time>
                   <AiOutlineCalendar size={20} />
-                  {format(new Date(post.first_publication_date), "dd/MM/yyyy", { locale: ptBR })}
+                  {post.first_publication_date}
                 </time>
                 <span>
                   <FiUser size={20} />
@@ -64,6 +110,12 @@ function Home({ postsPagination }: HomeProps) {
               </a>
             </Link>
           ))}
+          <div className={styles.buttonContainer}>
+            {nextPage &&
+              (<button onClick={handleNextPage}>
+                Carregar mais posts
+              </button>)}
+          </div>
         </div>
       </main>
     </>
@@ -75,9 +127,9 @@ export default Home;
 export const getStaticProps: GetStaticProps = async () => {
   const prismic = getPrismicClient();
 
-  const response = await prismic.getByType<PrismicDocument>("posts");
+  const response = await prismic.getByType<PrismicDocument>("posts", { pageSize: 3 });
 
-  const next_page = "1";
+  const next_page = response.next_page;
 
   const results = response.results.map(post => {
     return {
@@ -91,8 +143,6 @@ export const getStaticProps: GetStaticProps = async () => {
     }
   })
 
-  console.log(results);
-  console.log(next_page);
   //console.log(JSON.stringify(response, null, 2));
 
   return {

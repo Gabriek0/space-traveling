@@ -6,7 +6,6 @@ import { GetStaticPaths, GetStaticProps } from 'next';
 // Prismic
 import { getPrismicClient } from '../../services/prismic';
 
-
 // React Icons
 import { FiUser } from "react-icons/fi";
 import { AiOutlineCalendar } from "react-icons/ai";
@@ -20,6 +19,8 @@ import ptBR from 'date-fns/locale/pt-BR';
 import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
 import { RichText } from 'prismic-dom';
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 
 interface Post {
   first_publication_date: string | null;
@@ -42,7 +43,25 @@ interface PostProps {
   post: Post;
 }
 
-export default function Post({ post }: PostProps) {
+export default function Post({ post }: PostProps): JSX.Element {
+  const { isFallback } = useRouter();
+
+  const NumberWords = post.data.content.reduce((total, contentItem) => {
+    total += contentItem.heading.split(' ').length;
+
+    const words = contentItem.body.map(item => item.text.split(' ').length);
+    words.map(word => total += word);
+
+    return total;
+  }, 0);
+
+  const readingTime = Math.round(NumberWords / 200);
+
+  if (isFallback) {
+    return <h1>Carregando...</h1>;
+  }
+
+  // O tempo para leitura
 
   return (
     <>
@@ -67,7 +86,7 @@ export default function Post({ post }: PostProps) {
               </li>
               <li>
                 <AiOutlineClockCircle size={20} />
-                5 min
+                {readingTime} min
               </li>
             </ul>
 
@@ -105,7 +124,9 @@ export const getStaticPaths: GetStaticPaths = async () => {
     params: {
       slug: path.uid
     }
-  }))
+  }));
+
+  console.log(posts);
 
   return {
     paths,
