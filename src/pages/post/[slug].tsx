@@ -7,12 +7,12 @@ import { GetStaticPaths, GetStaticProps } from 'next';
 import { getPrismicClient } from '../../services/prismic';
 
 // React Icons
-import { FiUser } from "react-icons/fi";
-import { AiOutlineCalendar } from "react-icons/ai";
-import { AiOutlineClockCircle } from "react-icons/ai";
+import { FiUser } from 'react-icons/fi';
+import { AiOutlineCalendar } from 'react-icons/ai';
+import { AiOutlineClockCircle } from 'react-icons/ai';
 
 // Date-fns
-import { format } from "date-fns";
+import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 
 //Styles
@@ -50,12 +50,12 @@ export default function Post({ post }: PostProps): JSX.Element {
     total += contentItem.heading.split(' ').length;
 
     const words = contentItem.body.map(item => item.text.split(' ').length);
-    words.map(word => total += word);
+    words.map(word => (total += word));
 
     return total;
   }, 0);
 
-  const readingTime = Math.round(NumberWords / 200);
+  const readingTime = Math.ceil(NumberWords / 200);
 
   if (isFallback) {
     return <h1>Carregando...</h1>;
@@ -78,7 +78,9 @@ export default function Post({ post }: PostProps): JSX.Element {
             <ul>
               <li>
                 <AiOutlineCalendar size={20} />
-                {format(new Date(post.first_publication_date), "dd/MM/yyyy", { locale: ptBR })}
+                {format(new Date(post.first_publication_date), 'dd MMM yyyy', {
+                  locale: ptBR,
+                })}
               </li>
               <li>
                 <FiUser size={20} />
@@ -86,10 +88,9 @@ export default function Post({ post }: PostProps): JSX.Element {
               </li>
               <li>
                 <AiOutlineClockCircle size={20} />
-                {readingTime} min
+                {`${readingTime} min`}
               </li>
             </ul>
-
           </div>
 
           {post.data.content.map(content => (
@@ -97,17 +98,18 @@ export default function Post({ post }: PostProps): JSX.Element {
               <h2>{content.heading}</h2>
               <div
                 className={styles.postContent}
-                dangerouslySetInnerHTML={{ __html: RichText.asHtml(content.body) }}
-              // Porque utilizar o dangerous?
-              // Porque utilizar o RichText
+                dangerouslySetInnerHTML={{
+                  __html: RichText.asHtml(content.body),
+                }}
+                // Porque utilizar o dangerous?
+                // Porque utilizar o RichText
               />
             </article>
-          ))
-          }
+          ))}
         </div>
       </main>
     </>
-  )
+  );
 }
 
 // Casos
@@ -118,19 +120,19 @@ export default function Post({ post }: PostProps): JSX.Element {
 export const getStaticPaths: GetStaticPaths = async () => {
   const prismic = getPrismicClient({});
 
-  const posts = await prismic.getByType("posts");
+  const posts = await prismic.getByType('posts');
 
-  const paths = posts.results.map(path => ({
+  const paths = posts.results.map(post => ({
     params: {
-      slug: path.uid
-    }
+      slug: post.uid,
+    },
   }));
 
   console.log(posts);
 
   return {
     paths,
-    fallback: true
+    fallback: true,
   };
 };
 
@@ -139,32 +141,12 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
   const slug = params?.slug;
 
-  const response = await prismic.getByUID("posts", String(slug), {});
-
-  const post = {
-    first_publication_date: response.first_publication_date,
-    data: {
-      title: response.data.title,
-      banner: {
-        url: response.data.banner.url
-      },
-      author: response.data.author,
-      content: response.data.content.map(content => {
-        return {
-          heading: content.heading,
-          body: [...content.body] // Desestruturação dos dados
-        }
-      })
-    }
-  }
+  const response = await prismic.getByUID('posts', String(slug), {});
 
   return {
     props: {
-      post
-    }
+      post: response,
+    },
+    revalidate: 1000,
   };
-
-}
-
-
-
+};
